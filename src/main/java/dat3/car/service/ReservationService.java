@@ -13,34 +13,32 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Service
 public class ReservationService {
-    CarRepository carRepository;
-    MemberRepository memberRepository;
-    ReservationRepository reservationRepository;
-    MemberService memberService;
 
-    public ReservationService(CarRepository carRepository, MemberRepository memberRepository, ReservationRepository reservationRepository) {
-        this.carRepository = carRepository;
-        this.memberRepository = memberRepository;
-        this.reservationRepository = reservationRepository;
+  CarRepository carRepository;
+  MemberRepository memberRepository;
+  ReservationRepository reservationRepository;
+  MemberService memberService;
+
+  public ReservationService(CarRepository carRepository, MemberRepository memberRepository, ReservationRepository reservationRepository) {
+    this.carRepository = carRepository;
+    this.memberRepository = memberRepository;
+    this.reservationRepository = reservationRepository;
+  }
+
+  public ReservationResponse reserveCar(ReservationRequest body){
+    if(body.getDate().isBefore(LocalDate.now())){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Date in past not allowed");
     }
+    Member member = memberRepository.findById(body.getUserName()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"No member with this id found"));
+    Car car = carRepository.findById(body.getCarId()).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"No Car with this id found"));
+    //What if already reserved  --> Tomorrow
+    Reservation res = reservationRepository.save(new Reservation(body.getDate(),car,member));
+    return  new ReservationResponse(res);
+  }
 
-    public ReservationResponse reserveCar(ReservationRequest body) {
-        if(body.getDate().isBefore(LocalDate.now())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Past date is not allowed");
-        }
-        Member member = memberRepository.findById(body.getUsername()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No member with this id found"));
-        Car car = carRepository.findById(body.getCarId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No car with this id found"));
-        //What if already reserved
-        Reservation res = new Reservation(body.getDate(), car, member);
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        LocalDate reservationDate = LocalDate.parse(body.getDate().format(formatter), formatter);
-        return new ReservationResponse(res);
-    }
 }
