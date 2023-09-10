@@ -17,7 +17,7 @@ password allways test12
 The remaining parts should include real names and danish addresses
  */
 public class MemberTestDataFactory {
-  public static List<Member> generateTestMembers(String passwordUsedByAll) {
+  public static List<Member> generateTestMembers(String passwordUsedByAll, int numberOfMembers) {
     List<Member> members = new ArrayList<>();
 
     String[] firstNames = {"Anders", "Bent", "Christine", "Dorte", "Erik", "Freja", "Gustav", "Helle", "Inge", "Jens"};
